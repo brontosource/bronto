@@ -1,0 +1,36 @@
+default_language_version:
+  python: python3
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: trailing-whitespace
+      - id: pretty-format-json
+        args: ['--autofix']
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: format c/c++
+        language: system
+        entry: clang-format -i
+        files: ^.*[.](h|cc)$
+      - id: mdformat
+        name: format markdown
+        language: system
+        entry: mdformat --wrap=80
+        files: ^.*[.]md$
+      - id: buildifier
+        name: format bazel
+        language: system
+        entry: buildifier
+        files: ^.*[.](bazel|bzl)$
+      - id: bazel-test
+        name: run all tests
+        language: system
+        entry: bash -c 'bazel test ...'
+        pass_filenames: false
+        fail_fast: true

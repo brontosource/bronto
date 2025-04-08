@@ -1,0 +1,27 @@
+common \
+  --color=yes \
+  --registry=file:///%workspace%/bazel/registry \
+  --registry=https://bcr.bazel.build \
+  --noincompatible_disallow_empty_glob # Because llvm's Bazel rules require this.
+
+test \
+  --test_output=errors
+
+build:asan \
+  --copt=-fsanitize=address \
+  --linkopt=-fsanitize=address
+
+test:asan \
+  --test_env=ASAN_OPTIONS=external_symbolizer_path=/usr/bin/llvm-symbolizer \
+  --test_tag_filters="-noasan"
+
+build:tsan \
+  --copt=-fsanitize=thread \
+  --linkopt=-fsanitize=thread
+
+build:ubsan \
+  --copt=-fsanitize=undefined \
+  --linkopt=-fsanitize=undefined
+
+build:profile \
+  --copt=-fno-omit-frame-pointer

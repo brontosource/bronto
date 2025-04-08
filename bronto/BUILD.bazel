@@ -1,0 +1,14 @@
+cc_library(
+    name = "bronto",
+    hdrs = ["bronto.h"],
+)
+
+sh_test(
+    name = "bronto_test",
+    srcs = ["bronto_test.sh"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+    data = [
+        "bronto.h",
+        "bronto_compilation_test_source.cc",
+    ],
+)
