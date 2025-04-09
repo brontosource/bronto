@@ -37,8 +37,8 @@
 //
 // ```
 // void f() {
-//   std::string string = some_string();
-//   std::cout << duplicate(string);
+//   std::string s = some_string();
+//   std::cout << s + s;
 // }
 // ```
 //
