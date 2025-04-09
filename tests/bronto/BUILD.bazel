@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: 0BSD
+
+cc_test(
+    name = "compilation_test",
+    srcs = ["compilation.test.cpp"],
+    deps = ["//:bronto"],
+)
