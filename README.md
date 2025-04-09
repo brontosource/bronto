@@ -18,8 +18,10 @@ This project requires compiling with C++17 or a later version.
 
 Bronto can be built with either Bazel or CMake.
 
-| Build system | Minimum supported version | | ------------ |
-------------------------- | | Bazel | 8.1.1 | | CMake | 3.10.0 |
+| Build system | Minimum supported version |
+| ------------ | ------------------------- |
+| Bazel        | 8.1.1                     |
+| CMake        | 3.10.0                    |
 
 ## Bazel
 
