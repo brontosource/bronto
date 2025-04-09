@@ -1,0 +1,15 @@
+*.rs.rustfmt
+*.snap.new
+.cache
+.jj
+.watchman-*
+MODULE.bazel.lock
+bazel-bin
+bazel-bronto
+bazel-out
+bazel-testlogs
+compile-commands.json
+compile_commands.json
+external
+rust-project.json
+target
