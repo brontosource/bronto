@@ -1,0 +1,15 @@
+Language: Cpp
+Standard: c++20
+BasedOnStyle: Google
+AlignConsecutiveAssignments: true
+AlignEscapedNewlines: Right
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlignOperands: true
+FixNamespaceComments: true
+DerivePointerAlignment: false
+PointerAlignment: Left
+QualifierAlignment: Right
