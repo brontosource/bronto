@@ -3,8 +3,8 @@
 
 // `BRONTO_INLINE()`:
 //
-// A function-like macro that can be applied to function (free or member)
-// definitions or to `using`-aliases to indicate that every usage of the
+// A function-like macro that can be applied to function definitions (free or member)
+// or to `using`-aliases to indicate that every usage of the
 // annotated entity should be replaced with its definition. For example,
 //
 // ```
