@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: 0BSD
+
 #ifndef BRONTO_BRONTO_H
 #define BRONTO_BRONTO_H
 
