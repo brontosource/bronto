@@ -3,8 +3,6 @@
 #ifndef BRONTO_BRONTO_H
 #define BRONTO_BRONTO_H
 
-#define BRONTO_INTERNAL_REQUIRE_NO_ARGS()
-
 // `BRONTO_INLINE()`:
 //
 // A function-like macro that can be applied to function definitions (free or
@@ -51,9 +49,7 @@
 // requiring the parentheses allows for configuration arguments to be added
 // without requiring a breaking change.
 //
-#define BRONTO_INLINE(...)                                                     \
-  BRONTO_INTERNAL_REQUIRE_NO_ARGS(__VA_ARGS__)                                 \
-  __attribute__((annotate("bronto::inline_me")))
+#define BRONTO_INLINE() __attribute__((annotate("bronto::inline_me")))
 
 // `BRONTO_BEFORE()`:
 //
@@ -61,9 +57,7 @@
 // `bronto::rewrite_*` struct/class to indicate that the body of the function
 // represents some pattern to be matched in the code. See
 // https://brontosource.dev/docs for more details.
-#define BRONTO_BEFORE()                                                        \
-  BRONTO_INTERNAL_REQUIRE_NO_ARGS(__VA_ARGS__)                                 \
-  __attribute__((annotate("bronto::before")))
+#define BRONTO_BEFORE() __attribute__((annotate("bronto::before")))
 
 // `BRONTO_AFTER()`:
 //
@@ -71,9 +65,7 @@
 // `bronto::rewrite_*` struct/class to indicate that the body of the function
 // represents some pattern to be used as a replacement in the code. See
 // https://brontosource.dev/docs for more details.
-#define BRONTO_AFTER()                                                         \
-  BRONTO_INTERNAL_REQUIRE_NO_ARGS(__VA_ARGS__)                                 \
-  __attribute__((annotate("bronto::after")))
+#define BRONTO_AFTER() __attribute__((annotate("bronto::after")))
 
 namespace bronto {
 
