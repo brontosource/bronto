@@ -49,7 +49,11 @@
 // requiring the parentheses allows for configuration arguments to be added
 // without requiring a breaking change.
 //
-#define BRONTO_INLINE() __attribute__((annotate("bronto::inline_me")))
+#ifdef BRONTO_REFACTOR
+#define BRONTO_INLINE() [[clang::annotate("bronto::inline_me")]]
+#else
+#define BRONTO_INLINE()
+#endif
 
 // `BRONTO_BEFORE()`:
 //
@@ -57,7 +61,11 @@
 // `bronto::rewrite_*` struct/class to indicate that the body of the function
 // represents some pattern to be matched in the code. See
 // https://brontosource.dev/docs for more details.
-#define BRONTO_BEFORE() __attribute__((annotate("bronto::before")))
+#ifdef BRONTO_REFACTOR
+#define BRONTO_BEFORE() [[clang::annotate("bronto::before")]]
+#else
+#define BRONTO_BEFORE()
+#endif
 
 // `BRONTO_AFTER()`:
 //
@@ -65,7 +73,11 @@
 // `bronto::rewrite_*` struct/class to indicate that the body of the function
 // represents some pattern to be used as a replacement in the code. See
 // https://brontosource.dev/docs for more details.
-#define BRONTO_AFTER() __attribute__((annotate("bronto::after")))
+#ifdef BRONTO_REFACTOR
+#define BRONTO_AFTER() [[clang::annotate("bronto::after")]]
+#else
+#define BRONTO_AFTER()
+#endif
 
 namespace bronto {
 
