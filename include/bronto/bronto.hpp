@@ -81,12 +81,21 @@
 
 namespace bronto {
 
-/// `bronto::rewrite_expr`:
-///
-/// An empty struct used as a marker that any struct/class inheriting from it
-/// represents an expression replacement. Member functions can be annotated as
-/// `BRONTO_BEFORE` to indicate they represent a pattern to be searched for, or
-/// `BRONTO_AFTER` to indicate they represent a replacement pattern. See
+// `bronto::rewrite_decl`:
+//
+// An empty struct used as a marker that any struct/class inheriting from it
+// represents a declaration replacement. Member functions can be annotated as
+// `BRONTO_BEFORE` to indicate they represent a pattern to be searched for, or
+// `BRONTO_AFTER` to indicate they represent a replacement pattern. See
+// https://brontosource.dev/docs for more details.
+struct rewrite_decl {};
+
+// `bronto::rewrite_expr`:
+//
+// An empty struct used as a marker that any struct/class inheriting from it
+// represents an expression replacement. Member functions can be annotated as
+// `BRONTO_BEFORE` to indicate they represent a pattern to be searched for, or
+// `BRONTO_AFTER` to indicate they represent a replacement pattern. See
 // https://brontosource.dev/docs for more details.
 struct rewrite_expr {};
 
