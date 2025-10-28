@@ -3,6 +3,12 @@
 #ifndef BRONTO_BRONTO_H
 #define BRONTO_BRONTO_H
 
+#define BRONTO_INTERNAL_CAT(a, b) BRONTO_INTERNAL_CAT_(a, b)
+#define BRONTO_INTERNAL_CAT_(a, b) a##b
+
+#define BRONTO_INTERNAL_STRINGIFY(s) BRONTO_INTERNAL_STRINGIFY_(s)
+#define BRONTO_INTERNAL_STRINGIFY_(s) #s
+
 // `BRONTO_INLINE()`:
 //
 // A function-like macro that can be applied to function definitions (free or
@@ -77,6 +83,68 @@
 #define BRONTO_AFTER() [[clang::annotate("bronto::after")]]
 #else
 #define BRONTO_AFTER()
+#endif
+
+// `BRONTO_USAGE(tag)`:
+//
+// A function-like macro that can be applied to a `bronto::rewrite_*`
+// struct/class nested inside a struct/class inheriting from
+// `bronto::rewrite_decl`. Indicates that in order for the rewrite to be applied
+// to that declaration, some requirements are placed on the uses of the declared
+// variable. Specifically,
+//
+// * `BRONTO_USAGE(all)`: Requires that every use of the declared variable
+//   satisfies the constraints specified by the rule for the rewrite to occur.
+//   If the rewrite does occur, usages will be rewritten according to this rule.
+//
+// * `BRONTO_USAGE(any)`: Requires that at least one use of the declared
+//   variable satisfies the constraints specified by the rule for the rewrite to
+//   occur. If the rewrite does occur, any matching usage will be rewritten
+//   according to this rule.
+//
+// * `BRONTO_USAGE(none)`: Requires that no use of the declared variable may
+//   satisfiy the constraints specified by the rule for the rewrite to occur.
+//
+// * `BRONTO_USAGE(maybe)`: Makes no requirements about the usage of the
+//   declared variable, but rewrites each usage that satisfies the constraints
+//   of the rule.
+//
+// If multiple rules have a `BRONTO_USAGE(tag)` attribute, all constraints are
+// required. See https://brontosource.dev/docs for more details.
+#define BRONTO_USAGE(tag)                                                      \
+  BRONTO_INTERNAL_VALIDATE_USAGE(BRONTO_INTERNAL_CAT(                          \
+      BRONTO_INTERNAL_USAGE_KIND_, tag)())(tag) BRONTO_INTERNAL_USAGE(tag)
+
+#define BRONTO_INTERNAL_VALIDATE_USAGE(...)                                    \
+  BRONTO_INTERNAL_VALIDATE_USAGE_(__VA_ARGS__, BRONTO_INTERNAL_USAGE_OKAY,     \
+                                  BRONTO_INTERNAL_USAGE_FAIL)
+#define BRONTO_INTERNAL_VALIDATE_USAGE_(...)                                   \
+  BRONTO_INTERNAL_VALIDATE_USAGE_GET(__VA_ARGS__)
+#define BRONTO_INTERNAL_VALIDATE_USAGE_GET(arg0, arg1, N, ...) N
+
+// Anything with exactly two arguments suffices
+#define BRONTO_INTERNAL_ACCEPTABLE_USAGE 0, 1
+#define BRONTO_INTERNAL_USAGE_KIND_all() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+#define BRONTO_INTERNAL_USAGE_KIND_any() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+#define BRONTO_INTERNAL_USAGE_KIND_none() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+#define BRONTO_INTERNAL_USAGE_KIND_maybe() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+
+#define BRONTO_INTERNAL_USAGE_OKAY(tag)
+// clang-format off
+#define BRONTO_INTERNAL_USAGE_FAIL(tag) \
+    BrontoInternalIgnoreStruct; static_assert(false, R"(
+  The tag ")" BRONTO_INTERNAL_STRINGIFY(tag) R"(" is not supported inside the BRONTO_USAGE macro.
+  Only "all", "any", "none", and "maybe" are supported.
+  See https://brontosource.dev/docs for more documentation.
+
+)"); struct
+//clang-format on
+
+#ifdef BRONTO_REFACTOR
+#define BRONTO_INTERNAL_USAGE(tag) \
+    [[clang::annotate("bronto::usage::" BRONTO_INTERNAL_STRINGIFY(tag))]]
+#else
+#define BRONTO_INTERNAL_USAGE(tag)
 #endif
 
 namespace bronto {

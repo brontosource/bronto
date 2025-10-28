@@ -12,4 +12,9 @@ using Old BRONTO_INLINE() = New;
 #error This should never be executed because `BRONTO_REFACTOR` is not defined during compilation, only during the tool execution.
 #endif
 
+struct Rule : bronto::rewrite_decl {
+  struct BRONTO_USAGE(any) InnerRuleAny : bronto::rewrite_expr {};
+  struct BRONTO_USAGE(none) InnerRuleNone : bronto::rewrite_expr {};
+};
+
 int main() { return 0; }
