@@ -168,7 +168,7 @@
 #define BRONTO_INTERNAL_USAGE_OKAY(tag)                                        \
   BRONTO_INTERNAL_PUSH_WARNING_STATE                                           \
   BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES                                     \
-  [[bronto::improperly_placed_attribute]] BRONTO_INTERNAL_PUSH_WARNING_STATE
+  [[maybe_unused]] BRONTO_INTERNAL_PUSH_WARNING_STATE
 
 #endif
 
