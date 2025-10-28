@@ -13,8 +13,9 @@ using Old BRONTO_INLINE() = New;
 #endif
 
 struct Rule : bronto::rewrite_decl {
-  struct BRONTO_USAGE(any) InnerRuleAny : bronto::rewrite_expr {};
-  struct BRONTO_USAGE(none) InnerRuleNone : bronto::rewrite_expr {};
+  struct BRONTO_USAGE(required) Required : bronto::rewrite_expr {};
+  struct BRONTO_USAGE(allowed) Allowed : bronto::rewrite_expr {};
+  struct BRONTO_USAGE(forbidden) Forbidden : bronto::rewrite_expr {};
 };
 
 int main() { return 0; }

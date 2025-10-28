@@ -9,6 +9,25 @@
 #define BRONTO_INTERNAL_STRINGIFY(s) BRONTO_INTERNAL_STRINGIFY_(s)
 #define BRONTO_INTERNAL_STRINGIFY_(s) #s
 
+#ifdef __clang__
+
+#define BRONTO_INTERNAL_PUSH_WARNING_STATE _Pragma("GCC diagnostic push")
+#define BRONTO_INTERNAL_POP_WARNING_STATE _Pragma("GCC diagnostic pop")
+
+#define BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES                               \
+  _Pragma("GCC diagnostic error \"-Wignored-attributes\"")                     \
+      _Pragma("GCC diagnostic ignored \"-Wunknown-attributes\"")               \
+          _Pragma("GCC diagnostic ignored \"-Wmissing-declarations\"")
+
+#else
+
+#define BRONTO_INTERNAL_PUSH_WARNING_STATE
+#define BRONTO_INTERNAL_POP_WARNING_STATE
+
+#define BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES
+
+#endif
+
 // `BRONTO_INLINE()`:
 //
 // A function-like macro that can be applied to function definitions (free or
@@ -93,21 +112,18 @@
 // to that declaration, some requirements are placed on the uses of the declared
 // variable. Specifically,
 //
-// * `BRONTO_USAGE(all)`: Requires that every use of the declared variable
-//   satisfies the constraints specified by the rule for the rewrite to occur.
-//   If the rewrite does occur, usages will be rewritten according to this rule.
-//
-// * `BRONTO_USAGE(any)`: Requires that at least one use of the declared
+// * `BRONTO_USAGE(required)`: Requires that at least one use of the declared
 //   variable satisfies the constraints specified by the rule for the rewrite to
 //   occur. If the rewrite does occur, any matching usage will be rewritten
 //   according to this rule.
 //
-// * `BRONTO_USAGE(none)`: Requires that no use of the declared variable may
-//   satisfiy the constraints specified by the rule for the rewrite to occur.
-//
-// * `BRONTO_USAGE(maybe)`: Makes no requirements about the usage of the
+// * `BRONTO_USAGE(allowed)`: Makes no requirements about the usage of the
 //   declared variable, but rewrites each usage that satisfies the constraints
 //   of the rule.
+//
+// * `BRONTO_USAGE(forbidden)`: Requires that no use of the declared variable
+//   may satisfiy the constraints specified by the rule for the rewrite to
+//   occur.
 //
 // If multiple rules have a `BRONTO_USAGE(tag)` attribute, all constraints are
 // required. See https://brontosource.dev/docs for more details.
@@ -124,27 +140,36 @@
 
 // Anything with exactly two arguments suffices
 #define BRONTO_INTERNAL_ACCEPTABLE_USAGE 0, 1
-#define BRONTO_INTERNAL_USAGE_KIND_all() BRONTO_INTERNAL_ACCEPTABLE_USAGE
-#define BRONTO_INTERNAL_USAGE_KIND_any() BRONTO_INTERNAL_ACCEPTABLE_USAGE
-#define BRONTO_INTERNAL_USAGE_KIND_none() BRONTO_INTERNAL_ACCEPTABLE_USAGE
-#define BRONTO_INTERNAL_USAGE_KIND_maybe() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+#define BRONTO_INTERNAL_USAGE_KIND_required() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+#define BRONTO_INTERNAL_USAGE_KIND_allowed() BRONTO_INTERNAL_ACCEPTABLE_USAGE
+#define BRONTO_INTERNAL_USAGE_KIND_forbidden() BRONTO_INTERNAL_ACCEPTABLE_USAGE
 
-#define BRONTO_INTERNAL_USAGE_OKAY(tag)
 // clang-format off
 #define BRONTO_INTERNAL_USAGE_FAIL(tag) \
     BrontoInternalIgnoreStruct; static_assert(false, R"(
   The tag ")" BRONTO_INTERNAL_STRINGIFY(tag) R"(" is not supported inside the BRONTO_USAGE macro.
-  Only "all", "any", "none", and "maybe" are supported.
+  Only "required", "allowed", and "forbidden" are supported.
   See https://brontosource.dev/docs for more documentation.
 
 )"); struct
-//clang-format on
+// clang-format on
 
 #ifdef BRONTO_REFACTOR
-#define BRONTO_INTERNAL_USAGE(tag) \
-    [[clang::annotate("bronto::usage::" BRONTO_INTERNAL_STRINGIFY(tag))]]
+#define BRONTO_INTERNAL_USAGE(tag)                                             \
+  BRONTO_INTERNAL_PUSH_WARNING_STATE                                           \
+  BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES                                     \
+  [[clang::annotate("bronto::usage::" BRONTO_INTERNAL_STRINGIFY(               \
+      tag))]] BRONTO_INTERNAL_PUSH_WARNING_STATE
+
+#define BRONTO_INTERNAL_USAGE_OKAY(tag)
 #else
 #define BRONTO_INTERNAL_USAGE(tag)
+
+#define BRONTO_INTERNAL_USAGE_OKAY(tag)                                        \
+  BRONTO_INTERNAL_PUSH_WARNING_STATE                                           \
+  BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES                                     \
+  [[bronto::improperly_placed_attribute]] BRONTO_INTERNAL_PUSH_WARNING_STATE
+
 #endif
 
 namespace bronto {
