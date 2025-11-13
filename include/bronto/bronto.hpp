@@ -108,9 +108,9 @@
 //
 // A function-like macro that can be applied to a `bronto::rewrite_*`
 // struct/class nested inside a struct/class inheriting from
-// `bronto::rewrite_decl`. Indicates that in order for the rewrite to be applied
-// to that declaration, some requirements are placed on the uses of the declared
-// variable. Specifically,
+// `bronto::rewrite_decl` or `bronto::rewrite_param`. Indicates that in order
+// for the rewrite to be applied to that declaration, some requirements are
+// placed on the uses of the declared variable. Specifically,
 //
 // * `BRONTO_USAGE(required)`: Requires that at least one use of the declared
 //   variable satisfies the constraints specified by the rule for the rewrite to
@@ -191,6 +191,16 @@ struct rewrite_decl {};
 // `BRONTO_AFTER` to indicate they represent a replacement pattern. See
 // https://brontosource.dev/docs for more details.
 struct rewrite_expr {};
+
+// `bronto::rewrite_param`:
+//
+// An empty struct used as a marker that any struct/class inheriting from it
+// represents a parameter replacement. Member functions can be annotated as
+// `BRONTO_BEFORE` to indicate they represent a pattern to be searched for, or
+// `BRONTO_AFTER` to indicate they represent a replacement pattern. See
+// https://brontosource.dev/docs for more details.
+struct rewrite_param {};
+
 
 }  // namespace bronto
 
