@@ -5,3 +5,9 @@ cc_test(
     srcs = ["compilation.test.cpp"],
     deps = ["//:bronto"],
 )
+
+cc_test(
+    name = "c_compilation_test",
+    srcs = ["compilation.test.c"],
+    deps = ["//:bronto"],
+)
