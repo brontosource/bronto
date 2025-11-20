@@ -151,16 +151,16 @@
 "  See https://brontosource.dev/docs for more documentation.\n\n"
 // clang-format on
 
-#if __cpp_static_assert >= 200410L
-#define BRONTO_INTERNAL_USAGE_FAIL(tag)                                        \
-  BrontoInternalIgnoreStruct;                                                  \
-  static_assert(false, BRONTO_INTERNAL_USAGE_FAIL_MESSAGE(tag));               \
-  struct
-#elif __clang__ || __GNUC__
+#if __clang__ || __GNUC__
 #define BRONTO_INTERNAL_USAGE_FAIL(tag)                                        \
   BrontoInternalIgnoreStruct;                                                  \
   _Pragma(BRONTO_INTERNAL_STRINGIFY(                                           \
       GCC error BRONTO_INTERNAL_USAGE_FAIL_MESSAGE(tag))) struct
+#elif __cpp_static_assert >= 200410L
+#define BRONTO_INTERNAL_USAGE_FAIL(tag)                                        \
+  BrontoInternalIgnoreStruct;                                                  \
+  static_assert(false, BRONTO_INTERNAL_USAGE_FAIL_MESSAGE(tag));               \
+  struct
 #endif
 
 #ifdef BRONTO_REFACTOR
