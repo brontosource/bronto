@@ -145,14 +145,23 @@
 #define BRONTO_INTERNAL_USAGE_KIND_forbidden() BRONTO_INTERNAL_ACCEPTABLE_USAGE
 
 // clang-format off
-#define BRONTO_INTERNAL_USAGE_FAIL(tag) \
-    BrontoInternalIgnoreStruct; static_assert(false, R"(
-  The tag ")" BRONTO_INTERNAL_STRINGIFY(tag) R"(" is not supported inside the BRONTO_USAGE macro.
-  Only "required", "allowed", and "forbidden" are supported.
-  See https://brontosource.dev/docs for more documentation.
-
-)"); struct
+#define BRONTO_INTERNAL_USAGE_FAIL_MESSAGE(tag) "\n" \
+"  The tag \"" BRONTO_INTERNAL_STRINGIFY(tag) "\" is not supported inside the BRONTO_USAGE macro.\n" \
+"  Only \"required\", \"allowed\", and \"forbidden\" are supported.\n" \
+"  See https://brontosource.dev/docs for more documentation.\n\n"
 // clang-format on
+
+#if __clang__ || __GNUC__
+#define BRONTO_INTERNAL_USAGE_FAIL(tag)                                        \
+  BrontoInternalIgnoreStruct;                                                  \
+  _Pragma(BRONTO_INTERNAL_STRINGIFY(                                           \
+      GCC error BRONTO_INTERNAL_USAGE_FAIL_MESSAGE(tag))) struct
+#elif __cpp_static_assert >= 200410L
+#define BRONTO_INTERNAL_USAGE_FAIL(tag)                                        \
+  BrontoInternalIgnoreStruct;                                                  \
+  static_assert(false, BRONTO_INTERNAL_USAGE_FAIL_MESSAGE(tag));               \
+  struct
+#endif
 
 #ifdef BRONTO_REFACTOR
 #define BRONTO_INTERNAL_USAGE(tag)                                             \
@@ -172,6 +181,7 @@
 
 #endif
 
+#ifdef __cplusplus
 namespace bronto {
 
 // `bronto::rewrite_decl`:
@@ -201,8 +211,8 @@ struct rewrite_expr {};
 // https://brontosource.dev/docs for more details.
 struct rewrite_param {};
 
-
 }  // namespace bronto
+#endif  // __cplusplus
 
 // `BRONTO_REFACTOR`:
 //
