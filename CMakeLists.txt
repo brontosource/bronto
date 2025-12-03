@@ -14,6 +14,8 @@ option(
     ${PROJECT_IS_TOP_LEVEL}
 )
 
+set(CMAKE_CXX_STANDARD 11)
+
 add_subdirectory(src/bronto)
 
 if(BRONTO_BUILD_TESTS)
