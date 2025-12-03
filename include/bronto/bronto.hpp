@@ -170,7 +170,7 @@
   BRONTO_INTERNAL_PUSH_WARNING_STATE                                           \
   BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES                                     \
   [[clang::annotate("bronto::usage::" BRONTO_INTERNAL_STRINGIFY(               \
-      tag))]] BRONTO_INTERNAL_PUSH_WARNING_STATE
+      tag))]] BRONTO_INTERNAL_POP_WARNING_STATE
 
 #define BRONTO_INTERNAL_USAGE_OKAY(tag)
 #else
@@ -179,7 +179,7 @@
 #define BRONTO_INTERNAL_USAGE_OKAY(tag)                                        \
   BRONTO_INTERNAL_PUSH_WARNING_STATE                                           \
   BRONTO_INTERNAL_ERROR_IGNORED_ATTRIBUTES                                     \
-  [[maybe_unused]] BRONTO_INTERNAL_PUSH_WARNING_STATE
+  [[maybe_unused]] BRONTO_INTERNAL_POP_WARNING_STATE
 
 #endif
 
