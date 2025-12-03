@@ -87,7 +87,8 @@
 // represents some pattern to be matched in the code. See
 // https://brontosource.dev/docs for more details.
 #ifdef BRONTO_REFACTOR
-#define BRONTO_BEFORE(...) [[clang::annotate("bronto::before", __VA_ARGS__)]]
+#define BRONTO_BEFORE(...)                                                     \
+  [[clang::annotate("bronto::before", ::bronto::internal::config(__VA_ARGS__))]]
 #else
 #define BRONTO_BEFORE(...)
 #endif
@@ -99,7 +100,8 @@
 // represents some pattern to be used as a replacement in the code. See
 // https://brontosource.dev/docs for more details.
 #ifdef BRONTO_REFACTOR
-#define BRONTO_AFTER(...) [[clang::annotate("bronto::after", __VA_ARGS__)]]
+#define BRONTO_AFTER(...)                                                      \
+  [[clang::annotate("bronto::after", ::bronto::internal::config(__VA_ARGS__))]]
 #else
 #define BRONTO_AFTER(...)
 #endif
@@ -173,6 +175,11 @@
 #endif
 
 namespace bronto {
+namespace internal {
+
+inline constexpr void config(...) {}
+
+}  // namespace internal
 
 // `bronto::rewrite_decl`:
 //
@@ -200,7 +207,6 @@ struct rewrite_expr {};
 // `BRONTO_AFTER` to indicate they represent a replacement pattern. See
 // https://brontosource.dev/docs for more details.
 struct rewrite_param {};
-
 
 }  // namespace bronto
 
