@@ -177,7 +177,7 @@
 namespace bronto {
 namespace internal {
 
-inline constexpr void config(...) {}
+inline constexpr int config(...) { return 0; }
 
 }  // namespace internal
 
