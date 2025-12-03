@@ -218,6 +218,18 @@ struct rewrite_expr {};
 // https://brontosource.dev/docs for more details.
 struct rewrite_param {};
 
+// `bronto::avoid_adl`:
+//
+// An empty class that can be inherited from to bring in other namespaces for
+// the purposes of argument-dependent-lookup, and to declare that functions
+// found via this type for argument-dependent-lookup should be replaced with
+// qualified function calls. Function call will be rewritten minimally. That
+// is, a function will be rewritten only when the argument whose type inherits
+// from `avoid_adl` is the only reason the function declaration was found.
+// See https://brontosource.dev/docs for more details.
+template <typename, typename...>
+struct avoid_adl {};
+
 }  // namespace bronto
 #endif  // __cplusplus
 
