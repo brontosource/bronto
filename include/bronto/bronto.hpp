@@ -183,6 +183,43 @@
 
 #endif
 
+// `BRONTO_INLINE_MACRO()`:
+//
+// An empty function-like macro that can be applied to macro definitions as the
+// first tokens, indicating that expansions of that macro should be replaced
+// with the remaining tokens. For example,
+//
+// ```
+// #define MY_MACRO BRONTO_INLINE_MACRO() (1 + 5)
+//
+// int six() { return MY_MACRO; }
+// ```
+//
+// the code snippet above indicates that any use of `MY_MACRO` should be
+// replaced with `(1 + 5)`.
+//
+// Function-like macros can also be inlined, with their arguments replacing
+// paramters in the resulting text, such as:
+//
+// ```
+// #define _min(a, b) BRONTO_INLINE_MACRO() std::min(a, b)
+//
+// int zero() { return _min(1, 0); }
+// ```
+//
+// the snippet above will be tranformed into:
+//
+// ```
+// int zero() { return std::min(1, 0); }
+// ```
+//
+// The `BRONTO_INLINE_MACRO` function-like macro accepts exactly zero arguments.
+// Though this could have been implemented with a non-function-like macro,
+// requiring the parentheses allows for configuration arguments to be added
+// without requiring a breaking change.
+//
+#define BRONTO_INLINE_MACRO()
+
 #ifdef __cplusplus
 namespace bronto {
 namespace internal {
