@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: 0BSD
 
 #include <bronto/bronto.hpp>
+#include <cstdint>
 
 BRONTO_INLINE()
 void f() {}
@@ -12,7 +13,7 @@ using Old BRONTO_INLINE() = New;
 #error This should never be executed because `BRONTO_REFACTOR` is not defined during compilation, only during the tool execution.
 #endif
 
-struct Rule : bronto::rewrite_decl {
+struct DeclRule : bronto::rewrite_decl {
   struct BRONTO_USAGE(required) Required : bronto::rewrite_expr {};
   struct BRONTO_USAGE(allowed) Allowed : bronto::rewrite_expr {};
   struct BRONTO_USAGE(forbidden) Forbidden : bronto::rewrite_expr {};
@@ -40,6 +41,11 @@ struct RuleLoose : bronto::rewrite_decl {
 
   BRONTO_AFTER("loose")
   void after() { int var; }
+};
+
+struct TypeRule : bronto::rewrite_type {
+  using before BRONTO_BEFORE() = std::int32_t;
+  using after BRONTO_AFTER()   = std::int64_t;
 };
 
 int main() { return 0; }

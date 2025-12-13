@@ -255,6 +255,15 @@ struct rewrite_expr {};
 // https://brontosource.dev/docs for more details.
 struct rewrite_param {};
 
+// `bronto::rewrite_type`:
+//
+// An empty struct used as a marker that any struct/class inheriting from it
+// represents a type replacement. Member aliases and alias templates can be
+// annotated as `BRONTO_BEFORE` to indicate they represent a pattern to be
+// searched for, or `BRONTO_AFTER` to indicate they represent a replacement
+// pattern. See https://brontosource.dev/docs for more details.
+struct rewrite_type {};
+
 // `bronto::avoid_adl`:
 //
 // An empty class that can be inherited from to bring in other namespaces for
