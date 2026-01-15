@@ -88,7 +88,7 @@
 // https://brontosource.dev/docs for more details.
 #ifdef BRONTO_REFACTOR
 #define BRONTO_BEFORE(...)                                                     \
-  [[clang::annotate("bronto::before", ::bronto::internal::config(__VA_ARGS__))]]
+  [[clang::annotate("bronto::before", BRONTO_INTERNAL_CONFIG(__VA_ARGS__))]]
 #else
 #define BRONTO_BEFORE(...)
 #endif
@@ -101,7 +101,7 @@
 // https://brontosource.dev/docs for more details.
 #ifdef BRONTO_REFACTOR
 #define BRONTO_AFTER(...)                                                      \
-  [[clang::annotate("bronto::after", ::bronto::internal::config(__VA_ARGS__))]]
+  [[clang::annotate("bronto::after", BRONTO_INTERNAL_CONFIG(__VA_ARGS__))]]
 #else
 #define BRONTO_AFTER(...)
 #endif
@@ -224,7 +224,12 @@
 namespace bronto {
 namespace internal {
 
+#ifdef __cpp_constexpr
 inline constexpr int config(...) { return 0; }
+#define BRONTO_INTERNAL_CONFIG(...) ::bronto::internal::config(__VA_ARGS__)
+#else
+#define BRONTO_INTERNAL_CONFIG(...) 0
+#endif
 
 }  // namespace internal
 
