@@ -228,7 +228,12 @@ namespace internal {
 inline constexpr int config(...) { return 0; }
 #define BRONTO_INTERNAL_CONFIG(...) ::bronto::internal::config(__VA_ARGS__)
 #else
-#define BRONTO_INTERNAL_CONFIG(...) 0
+#define BRONTO_INTERNAL_CONFIG(...)                                            \
+  BRONTO_INTERNAL_EXPAND(__VA_ARGS__ __VA_OPT__(, ) BRONTO_INTERNAL_CONFIG_1,  \
+                         BRONTO_INTERNAL_CONFIG_0)(__VA_ARGS__)
+#define BRONTO_INTERNAL_EXPAND(_, head, ...) head
+#define BRONTO_INTERNAL_CONFIG_0() "loose"
+#define BRONTO_INTERNAL_CONFIG_1(config) config
 #endif
 
 }  // namespace internal
