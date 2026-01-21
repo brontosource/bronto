@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: 0BSD
 
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
 cc_test(
     name = "compilation_test",
     srcs = ["compilation.test.cpp"],
@@ -9,5 +11,12 @@ cc_test(
 cc_test(
     name = "c_compilation_test",
     srcs = ["compilation.test.c"],
+    deps = ["//:bronto"],
+)
+
+cc_test(
+    name = "legacy_compilation_test",
+    srcs = ["compilation.test.cpp"],
+    copts = ["-std=c++98"],
     deps = ["//:bronto"],
 )
