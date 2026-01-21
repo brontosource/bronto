@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: 0BSD
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "bronto",
-    hdrs = ["//:include/bronto/bronto.hpp"],
     srcs = ["//:src/bronto/bronto.cpp"],
+    hdrs = ["//:include/bronto/bronto.hpp"],
     strip_include_prefix = "include",
 )
