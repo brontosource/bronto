@@ -274,6 +274,15 @@ struct rewrite_param {};
 // pattern. See https://brontosource.dev/docs for more details.
 struct rewrite_type {};
 
+// `bronto::rewrite_lambda_capture`:
+//
+// An empty base class marker used to indicate that a struct represents a lambda
+// capture replacement. Member functions can be annotated as `BRONTO_BEFORE` to
+// indicate that they represent a pattern to be searched for or `BRONTO_AFTER`
+// to indicate they represent a replacement pattern. See
+// https://brontosource.dev/docs for more details.
+struct rewrite_lambda_capture {};
+
 // `bronto::avoid_adl`:
 //
 // An empty class that can be inherited from to bring in other namespaces for
