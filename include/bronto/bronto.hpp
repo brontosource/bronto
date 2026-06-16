@@ -80,6 +80,48 @@
 #define BRONTO_INLINE()
 #endif
 
+// `BRONTO_EXTRACT()`:
+//
+// A function-like macro that can be applied to function definitions to indicate
+// that every expression matching the single statement in the annotated
+// function's body should be replaced with a call to that function. For example,
+//
+// ```
+// BRONTO_EXTRACT()
+// std::string duplicate(const std::string& s) { return s + s; }
+//
+// std::string x, y;
+//
+// void f() {
+//   std::cout << x + x;
+//   std::cout << y + y;
+//   std::cout << x + y;
+// }
+// ```
+//
+// The code snippet above indicates that any expression of the form `e + e`
+// where `e` is a `std::string` should be replaced with a call to `duplicate`,
+// transforming `f` into
+//
+// ```
+// void f() {
+//   std::cout << duplicate(x);
+//   std::cout << duplicate(y);
+//   std::cout << x + y;
+// }
+// ```
+//
+// The `BRONTO_EXTRACT` function-like macro accepts exactly zero arguments.
+// Though this could have been implemented with a non-function-like macro,
+// requiring the parentheses allows for configuration arguments to be added
+// without requiring a breaking change.
+//
+#ifdef BRONTO_REFACTOR
+#define BRONTO_EXTRACT() [[clang::annotate("bronto::extract_me")]]
+#else
+#define BRONTO_EXTRACT()
+#endif
+
 // `BRONTO_BEFORE()`:
 //
 // A function-like macro that can be applied to functions inside a
