@@ -99,7 +99,7 @@
 // }
 // ```
 //
-// the code snippet above indicates that any expression of the form `e + e`
+// The code snippet above indicates that any expression of the form `e + e`
 // where `e` is a `std::string` should be replaced with a call to `duplicate`,
 // transforming `f` into
 //
