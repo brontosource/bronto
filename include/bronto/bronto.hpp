@@ -337,6 +337,169 @@ struct rewrite_lambda_capture {};
 template <typename, typename...>
 struct avoid_adl {};
 
+#if __cplusplus >= 201103L
+
+namespace internal {
+
+template <typename T>
+T&& declval();
+
+template <bool B, typename T = void>
+struct enable_if {};
+
+template <typename T>
+struct enable_if<true, T> {
+  typedef T type;
+};
+
+template <typename...>
+struct voider {
+  typedef void type;
+};
+
+template <typename C>
+struct char_pointer_base {
+  typedef C type;
+};
+
+template <typename P>
+struct char_pointer {};
+
+// clang-format off
+template <> struct char_pointer<char*>           : char_pointer_base<char>     {};
+template <> struct char_pointer<char const*>     : char_pointer_base<char>     {};
+template <> struct char_pointer<wchar_t*>        : char_pointer_base<wchar_t>  {};
+template <> struct char_pointer<wchar_t const*>  : char_pointer_base<wchar_t>  {};
+template <> struct char_pointer<char16_t*>       : char_pointer_base<char16_t> {};
+template <> struct char_pointer<char16_t const*> : char_pointer_base<char16_t> {};
+template <> struct char_pointer<char32_t*>       : char_pointer_base<char32_t> {};
+template <> struct char_pointer<char32_t const*> : char_pointer_base<char32_t> {};
+#if defined(__cpp_char8_t)
+template <> struct char_pointer<char8_t*>        : char_pointer_base<char8_t>  {};
+template <> struct char_pointer<char8_t const*>  : char_pointer_base<char8_t>  {};
+#endif
+// clang-format on
+
+template <typename T, typename = void>
+struct is_char_pointer {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_char_pointer<T,
+                       typename voider<typename char_pointer<T>::type>::type> {
+  enum : bool { value = true };
+};
+
+template <typename T, typename = void>
+struct is_string_like {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_string_like<T, typename voider<typename char_pointer<
+                             decltype(declval<T&>().data())>::type>::type> {
+  enum : bool { value = true };
+};
+
+template <typename T>
+struct string_literal_type {
+  typedef
+      typename char_pointer<decltype(declval<T&>().data())>::type const* type;
+};
+
+}  // namespace internal
+
+// `bronto::eval`:
+//
+// In a replacement, `bronto::eval(expr)` constant-evaluates `expr` and uses the
+// result as replacement. For example, `bronto::eval(1 + 2)` writes the value
+// `3` rather than the spliced text `1 + 2`. Parameters of the replacement
+// function may appear in `expr`, and the expressions captured at the rewrite
+// site are substituted for them before evaluation.
+//
+// `bronto::eval` takes exactly one argument and may only appear in a function
+// annotated with `BRONTO_AFTER()`. If the substitution fails, or the
+// substituted expression cannot be constant-evaluated, the matched site is
+// left unchanged and a diagnostic explains why.
+//
+// The literal denotes the evaluated value exactly. The type of the expression
+// determines the kind of literal generated:
+//
+//   Expression type       Generated literal            Example
+//   --------------------  ---------------------------  ------------------------
+//   bool                  boolean literal              true
+//   int                   integer, no suffix           42
+//   unsigned              integer, u suffix            42u
+//   long                  integer, l suffix            42l
+//   unsigned long         integer, ul suffix           42ul
+//   long long             integer, ll suffix           42ll
+//   unsigned long long    integer, ull suffix          42ull
+//   signed char,          static_cast of an            static_cast<short>(1000)
+//     unsigned char,        integer literal
+//     short,
+//     unsigned short
+//   char                  character, no prefix         'a'
+//   wchar_t               character, L prefix          L'a'
+//   char8_t               character, u8 prefix         u8'a'
+//   char16_t              character, u prefix          u'a'
+//   char32_t              character, U prefix          U'a'
+//   float                 floating-point, f suffix     1.5f
+//   double                floating-point, no suffix    1.5
+//   long double           floating-point, L suffix     1.5L
+//   string-like,          string, prefix matching      "abc", L"abc"
+//     character pointer     the code unit type
+//
+// For character results, printable ASCII characters are written verbatim,
+// mnemonic escapes (e.g. `\n`) are used where they exist portably, and any
+// other value uses a numeric escape. Note that `signed char` and `unsigned
+// char` are treated as integer types, not character types.
+//
+// For floating-point results, the expression is constant-evaluated with IEEE
+// 754 arithmetic in the result type's format on the target (as specified in
+// your compile_commands.json; e.g. `long double` varies by target). The
+// following applies:
+//
+//   - Values are rounded to nearest with ties to even.
+//   - Operations are never contracted. For example, `a * b + c` is evaluated as
+//     a rounded multiply then a rounded add, never a fused multiply-add, so the
+//     result may differ from what the same expression would compute at runtime
+//     under flags like `-ffp-contract=fast`.
+//   - The emitted literal denotes the evaluated value exactly. Any compiler
+//     that parses floating-point literals with correct rounding reproduces the
+//     value bit-for-bit. It is not necessarily the shortest spelling of that
+//     value.
+//
+// To output a string literal, the evaluated expression must be of a type that
+// has a constexpr `data()` member function returning a pointer to a standard
+// character type and a constexpr `size()` member function returning its length.
+// In C++17 `std::string_view` satisfies these requirements, and in C++20
+// `std::string` does as well. The literal denotes each code unit of the result
+// exactly, using the same escaping rules as character literals.
+//
+// An expression whose type is itself a pointer to a standard character type
+// (e.g. `char const*`) is accepted as a NUL-terminated string. A null pointer
+// or a character array without a terminator fails to constant-evaluate.
+//
+// For a string-like or character-pointer expression, `bronto::eval(expr)` is
+// declared to return a pointer to the constant character type (e.g.
+// `char const*`) rather than the expression's own type. This models the
+// string literal that will be generated in the replacement text.
+template <typename T, typename internal::enable_if<
+                          not internal::is_string_like<T>::value and
+                              not internal::is_char_pointer<T>::value,
+                          int>::type = 0>
+T eval(T value);
+
+template <typename T, typename internal::enable_if<
+                          internal::is_string_like<T>::value, int>::type = 0>
+typename internal::string_literal_type<T>::type eval(T value);
+
+template <typename T, typename internal::enable_if<
+                          internal::is_char_pointer<T>::value, int>::type = 0>
+typename internal::char_pointer<T>::type const* eval(T value);
+#endif  // __cplusplus >= 201103L
+
 }  // namespace bronto
 #endif  // __cplusplus
 

@@ -15,8 +15,15 @@ cc_test(
 )
 
 cc_test(
-    name = "legacy_compilation_test",
+    name = "cxx98_compilation_test",
     srcs = ["compilation.test.cpp"],
     copts = ["-std=c++98"],
+    deps = ["//:bronto"],
+)
+
+cc_test(
+    name = "cxx11_compilation_test",
+    srcs = ["compilation.test.cpp"],
+    copts = ["-std=c++11"],
     deps = ["//:bronto"],
 )
