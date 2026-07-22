@@ -397,8 +397,10 @@ struct is_string_like {
 };
 
 template <typename T>
-struct is_string_like<T, typename voider<typename char_pointer<
-                             decltype(declval<T&>().data())>::type>::type> {
+struct is_string_like<
+    T,
+    typename voider<typename char_pointer<decltype(declval<T&>().data())>::type,
+                    decltype(declval<T&>().size())>::type> {
   enum : bool { value = true };
 };
 
@@ -406,6 +408,23 @@ template <typename T>
 struct string_literal_type {
   typedef
       typename char_pointer<decltype(declval<T&>().data())>::type const* type;
+};
+
+template <typename T>
+struct is_class_type {
+  template <typename U>
+  static char test(int U::*);
+  template <typename U>
+  static long test(...);
+
+  enum : bool { value = sizeof(test<T>(0)) == sizeof(char) };
+};
+
+template <typename T>
+struct is_evaluable {
+  enum : bool {
+    value = not is_class_type<T>::value or is_string_like<T>::value
+  };
 };
 
 }  // namespace internal
@@ -418,10 +437,10 @@ struct string_literal_type {
 // function may appear in `expr`, and the expressions captured at the rewrite
 // site are substituted for them before evaluation.
 //
-// `bronto::eval` takes exactly one argument and may only appear in a function
-// annotated with `BRONTO_AFTER()`. If the substitution fails, or the
-// substituted expression cannot be constant-evaluated, the matched site is
-// left unchanged and a diagnostic explains why.
+// `bronto::eval` may only appear in a function annotated with `BRONTO_AFTER()`.
+// If the substitution fails, or the substituted expression cannot be
+// constant-evaluated, the matched site is left unchanged and a diagnostic
+// explains why.
 //
 // The literal denotes the evaluated value exactly. The type of the expression
 // determines the kind of literal generated:
@@ -498,6 +517,42 @@ typename internal::string_literal_type<T>::type eval(T value);
 template <typename T, typename internal::enable_if<
                           internal::is_char_pointer<T>::value, int>::type = 0>
 typename internal::char_pointer<T>::type const* eval(T value);
+
+// The two-argument `bronto::eval` emits its value as a UDL (user-defined
+// literal).
+//
+// `bronto::eval(value, tag)` constant-evaluates `value` and writes it as a
+// UDL carrying `tag`'s suffix and prefix. `tag` is a UDL token whose content is
+// ignored. It names the literal operator, the token category, and the prefix.
+// For example, given an operator `Bytes operator""_kb(unsigned long long)`, a
+// replacement written
+//
+//     bronto::eval(n, 0_kb);
+//
+// writes `512_kb` when `n` evaluates to 512. The operator is never evaluated by
+// the tool, so it need not be constexpr. The following operator forms are
+// accepted:
+//
+//   - X operator""_x(unsigned long long): e.g. 100_x
+//   - X operator""_x(long double): e.g. 100.0_x
+//   - X operator""_x(CharT const*, size_t): e.g. u"100"_x
+//   - X operator""_x(CharT): e.g. u'1'_x
+//
+// where `CharT` is a standard character type.
+//
+// The following forms are _not_ accepted:
+//
+//   - X operator""_x(const char*): Raw literal operator
+//   - template <char...> X operator""_x(): Numeric literal operator template
+//   - template <T t> X operator""_x(): String literal operator template
+//
+// A string is the only literal a class type can produce, so `value` may only
+// have a class type if it exposes a constexpr `data()` and `size()`.
+template <int&... ExplicitArgumentBarrier, typename T, typename R,
+          typename internal::enable_if<internal::is_evaluable<T>::value,
+                                       int>::type = 0>
+R eval(T value, R&& tag);
+
 #endif  // __cplusplus >= 201103L
 
 }  // namespace bronto
