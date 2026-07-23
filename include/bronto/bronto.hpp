@@ -535,8 +535,9 @@ typename internal::char_pointer<T>::type const* eval(T value);
 //
 //   - X operator""_x(unsigned long long): e.g. 100_x
 //   - X operator""_x(long double): e.g. 100.0_x
-//   - X operator""_x(CharT const*, size_t): e.g. u"100"_x
 //   - X operator""_x(CharT): e.g. u'1'_x
+//   - X operator""_x(CharT const*, size_t): e.g. u"100"_x
+//   - template <T t> X operator""_x(): e.g. u"100"_x
 //
 // where `CharT` is a standard character type.
 //
@@ -544,7 +545,6 @@ typename internal::char_pointer<T>::type const* eval(T value);
 //
 //   - X operator""_x(const char*): Raw literal operator
 //   - template <char...> X operator""_x(): Numeric literal operator template
-//   - template <T t> X operator""_x(): String literal operator template
 //
 // A string is the only literal a class type can produce, so `value` may only
 // have a class type if it exposes a constexpr `data()` and `size()`.
