@@ -337,6 +337,77 @@ struct rewrite_lambda_capture {};
 template <typename, typename...>
 struct avoid_adl {};
 
+// `BRONTO_BINDS(predicate)`:
+//
+// A function-like macro that can be applied to a parameter declaration of a
+// function annotated with `BRONTO_BEFORE`, written after the parameter name.
+// It restricts the parameter to bind only expressions in the set described by
+// `predicate`, which must be an integral constant expression built from the
+// `bronto::*_literal` constants. For example,
+//
+// ```
+// struct R : bronto::rewrite_expr {
+//   BRONTO_BEFORE()
+//   void find(int n BRONTO_BINDS(bronto::literal)) { foo(n); }
+//
+//   BRONTO_AFTER()
+//   void repl(int n) { rewritten(n); }
+// };
+// ```
+//
+// matches `foo(1)` but not `foo(x)`. To match only non-literals, write
+// `BRONTO_BINDS(~bronto::literal)` or `BRONTO_BINDS(bronto::non_literal)`.
+#if defined(BRONTO_REFACTOR)
+#define BRONTO_BINDS(predicate)                                                \
+  [[clang::annotate("bronto::binds", 1,                                        \
+                    (predicate) & ::bronto::internal::bind_universe)]]
+#else  // defined(BRONTO_REFACTOR)
+#define BRONTO_BINDS(predicate)
+#endif  // defined(BRONTO_REFACTOR)
+
+// `bronto::*_literal` and `bronto::non_literal`:
+//
+// `BRONTO_BINDS` predicates describing sets of expressions that a pattern
+// parameter may be permitted to bind. Each constant denotes a set of expression
+// kinds, represented as a bitmask so that predicates compose with bitwise
+// operations.
+enum {
+  // Anything not covered by the other predicates.
+  non_literal = 1u << 0,
+  // Integer literals, including operands of unary `+`, `-`, and `~`.
+  integer_literal = 1u << 1,
+  // Floating-point literals, including operands of unary `+` and `-`.
+  floating_literal = 1u << 2,
+  // Character literals, e.g. 'a' or u'b'.
+  character_literal = 1u << 3,
+  // `true` and `false`, including operands of `!`.
+  boolean_literal = 1u << 4,
+  // String literals, e.g. "hello" or u"world".
+  string_literal = 1u << 5,
+  // `nullptr` and `__null`.
+  pointer_literal = 1u << 6,
+  // Any user-defined literal, including operands of unary `+` and `-`.
+  user_defined_literal = 1u << 7,
+};
+
+// `bronto::literal`:
+//
+// `BRONTO_BINDS` predicate matching any literal expression.
+enum {
+  literal = integer_literal | floating_literal | character_literal |
+            boolean_literal | string_literal | pointer_literal |
+            user_defined_literal,
+};
+
+namespace internal {
+
+// The set of all expressions this header knows about. `BRONTO_BINDS`
+// intersects every predicate with it so that a complement such as
+// `~bronto::literal` never names a bit outside the domain.
+enum { bind_universe = non_literal | literal };
+
+}  // namespace internal
+
 #if __cplusplus >= 201103L
 
 namespace internal {
