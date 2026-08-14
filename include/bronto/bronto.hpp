@@ -408,6 +408,26 @@ enum { bind_universe = non_literal | literal };
 
 }  // namespace internal
 
+// `bronto::where`:
+//
+// In a match pattern, `bronto::where(pred)` constant-evaluates `pred` and
+// rejects the match unless `pred` evaluates to `true`. A `pred` that cannot be
+// constant-evaluated at all rejects the match too, which is what happens when
+// it reads a parameter bound to a runtime expression. Both the parameters and
+// the template parameters of the function may appear in `pred`, and the
+// expressions captured at the potential rewrite site are substituted before
+// evaluation.
+//
+// `bronto::where` may only appear in a function annotated with
+// `BRONTO_BEFORE()`, and must be written as a leading statement of the function
+// body, ahead of the statement describing the pattern. Written after that
+// statement, or nested inside a subexpression, it is an error. Multiple
+// `bronto::where` statements can exist in a single match, and each predicate
+// must evaluate to `true` for the match to succeed. They are evaluated in order
+// with short circuiting, so a predicate is only evaluated when every predicate
+// ahead of it yielded `true`.
+void where(bool pred);
+
 #if __cplusplus >= 201103L
 
 namespace internal {
