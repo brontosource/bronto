@@ -48,6 +48,11 @@ struct TypeRule : bronto::rewrite_type {
   using after BRONTO_AFTER()   = std::int64_t;
 };
 
+struct ExprRule : bronto::rewrite_expr {
+  BRONTO_BEFORE()
+  int before(int x BRONTO_BINDS(bronto::literal)) { return x * 2; }
+};
+
 #if __cplusplus >= 201103L
 
 // The two-argument `bronto::eval(value, tag)` overload accepts `value` only

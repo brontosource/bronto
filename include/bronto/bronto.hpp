@@ -365,13 +365,14 @@ struct avoid_adl {};
 #define BRONTO_BINDS(predicate)
 #endif  // defined(BRONTO_REFACTOR)
 
-// `bronto::*_literal` and `bronto::non_literal`:
-//
-// `BRONTO_BINDS` predicates describing sets of expressions that a pattern
-// parameter may be permitted to bind. Each constant denotes a set of expression
-// kinds, represented as a bitmask so that predicates compose with bitwise
-// operations.
 enum {
+  // `bronto::*_literal` and `bronto::non_literal`:
+  //
+  // `BRONTO_BINDS` predicates describing sets of expressions that a pattern
+  // parameter may be permitted to bind. Each constant denotes a set of
+  // expression kinds, represented as a bitmask so that predicates compose with
+  // bitwise operations.
+
   // Anything not covered by the other predicates.
   non_literal = 1u << 0,
   // Integer literals, including operands of unary `+`, `-`, and `~`.
@@ -388,12 +389,10 @@ enum {
   pointer_literal = 1u << 6,
   // Any user-defined literal, including operands of unary `+` and `-`.
   user_defined_literal = 1u << 7,
-};
 
-// `bronto::literal`:
-//
-// `BRONTO_BINDS` predicate matching any literal expression.
-enum {
+  // `bronto::literal`:
+  //
+  // `BRONTO_BINDS` predicate matching any literal expression.
   literal = integer_literal | floating_literal | character_literal |
             boolean_literal | string_literal | pointer_literal |
             user_defined_literal,

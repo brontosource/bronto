@@ -3,12 +3,6 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_test(
-    name = "compilation_test",
-    srcs = ["compilation.test.cpp"],
-    deps = ["//:bronto"],
-)
-
-cc_test(
     name = "c_compilation_test",
     srcs = ["compilation.test.c"],
     deps = ["//:bronto"],
@@ -17,13 +11,39 @@ cc_test(
 cc_test(
     name = "cxx98_compilation_test",
     srcs = ["compilation.test.cpp"],
-    copts = ["-std=c++98"],
+    copts = [
+        "-std=c++98",
+        "-Werror=deprecated",
+    ],
     deps = ["//:bronto"],
 )
 
 cc_test(
     name = "cxx11_compilation_test",
     srcs = ["compilation.test.cpp"],
-    copts = ["-std=c++11"],
+    copts = [
+        "-std=c++11",
+        "-Werror=deprecated",
+    ],
+    deps = ["//:bronto"],
+)
+
+cc_test(
+    name = "cxx17_compilation_test",
+    srcs = ["compilation.test.cpp"],
+    copts = [
+        "-std=c++17",
+        "-Werror=deprecated",
+    ],
+    deps = ["//:bronto"],
+)
+
+cc_test(
+    name = "cxx20_compilation_test",
+    srcs = ["compilation.test.cpp"],
+    copts = [
+        "-std=c++20",
+        "-Werror=deprecated",
+    ],
     deps = ["//:bronto"],
 )
