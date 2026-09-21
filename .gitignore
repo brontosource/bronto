@@ -14,3 +14,4 @@ external
 rust-project.json
 target
 cmake_build
+.*.swp
