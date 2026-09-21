@@ -55,6 +55,9 @@ struct ExprRule : bronto::rewrite_expr {
 
 #if __cplusplus >= 201103L
 
+#include <type_traits>
+#include <utility>
+
 // The two-argument `bronto::eval(value, tag)` overload accepts `value` only
 // when it is a non-class type or a class exposing a char-pointer `data()` and a
 // `size()`. These checks exercise that SFINAE gate in unevaluated contexts.
@@ -117,6 +120,74 @@ static_assert(not is_udl_evaluable<Plain>::value,
               "plain class is not evaluable");
 
 }  // namespace eval_test
+
+// `bronto::include` accepts a header only when it is a string-like or
+// character-pointer type with `char` code units. These checks exercise that
+// SFINAE gate in unevaluated contexts.
+namespace include_test {
+
+// True iff `bronto::include(h)` is well-formed for `h` of type `T`.
+template <typename T>
+class is_includable {
+  template <typename U>
+  static auto test(int) -> decltype(bronto::include(std::declval<U>()), char());
+  template <typename U>
+  static long test(...);
+
+ public:
+  enum : bool { value = sizeof(test<T>(0)) == sizeof(char) };
+};
+
+// Accepted: pointers to `char`.
+static_assert(is_includable<char const*>::value, "char pointer is includable");
+static_assert(is_includable<char*>::value,
+              "mutable char pointer is includable");
+
+// Accepted: a class exposing a `char` pointer `data()` and a `size()`.
+static_assert(is_includable<eval_test::StringLike>::value,
+              "class with char-pointer data() and size() is includable");
+
+// Rejected: strings of any other code unit type.
+static_assert(not is_includable<wchar_t const*>::value,
+              "wide char pointer is not includable");
+static_assert(not is_includable<char16_t const*>::value,
+              "char16_t pointer is not includable");
+
+struct WideStringLike {
+  wchar_t const* data() const;
+  unsigned long size() const;
+};
+static_assert(not is_includable<WideStringLike>::value,
+              "class with wide char-pointer data() is not includable");
+
+// Rejected: types that are not strings at all.
+static_assert(not is_includable<int>::value, "int is not includable");
+static_assert(not is_includable<eval_test::IntData>::value,
+              "class with non-char-pointer data() is not includable");
+static_assert(not is_includable<eval_test::NoSize>::value,
+              "class with data() but no size() is not includable");
+static_assert(not is_includable<eval_test::Plain>::value,
+              "plain class is not includable");
+
+// A string literal decays to `char const*`.
+static_assert(
+    std::is_same<decltype(bronto::include("vector")), void>::value,
+    "a string literal is includable");
+
+// A replacement requesting headers, written as it would be in a rule.
+struct IncludeRule : bronto::rewrite_expr {
+  BRONTO_BEFORE()
+  int before(int x) { return x; }
+
+  BRONTO_AFTER()
+  int after(int x) {
+    bronto::include("vector");
+    bronto::include("project/header.h");
+    return x;
+  }
+};
+
+}  // namespace include_test
 
 #endif  // __cplusplus >= 201103L
 
