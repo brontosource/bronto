@@ -643,6 +643,100 @@ template <int&... ExplicitArgumentBarrier, typename T, typename R,
                                        int>::type = 0>
 R eval(T value, R&& tag);
 
+namespace internal {
+
+template <typename T, typename U>
+struct is_same {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_same<T, T> {
+  enum : bool { value = true };
+};
+
+// The code unit type of a string-like or character-pointer type `T`, as its
+// `type` member. Any other `T` has no `type` member.
+template <typename T, typename = void>
+struct code_unit {};
+
+template <typename T>
+struct code_unit<T, typename enable_if<is_char_pointer<T>::value>::type>
+    : char_pointer<T> {};
+
+template <typename T>
+struct code_unit<T, typename enable_if<is_string_like<T>::value>::type>
+    : char_pointer<decltype(declval<T&>().data())> {};
+
+// Whether `T` is a string-like or character-pointer type whose code units are
+// `char`.
+template <typename T, typename = void>
+struct is_char_string {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_char_string<T, typename enable_if<is_same<typename code_unit<T>::type,
+                                                    char>::value>::type> {
+  enum : bool { value = true };
+};
+
+}  // namespace internal
+
+// `bronto::HeaderInclude`:
+//
+// Names a header for `bronto::include`. `name` spells the header without
+// delimiters, as in `"vector"` or `"absl/strings/str_cat.h"`. `system` selects
+// the delimiters, `<name>` when `true` and `"name"` when `false`.
+//
+// `String` may be any type `bronto::eval` accepts as a string whose code units
+// are `char`. That includes `char const*`, `std::string_view` in C++17, and
+// `std::string` in C++20. Since C++17 the template argument can be deduced, as
+// in `bronto::HeaderInclude{"vector", true}`. Earlier standards spell it out,
+// as in `bronto::HeaderInclude<char const*>{"vector", true}`.
+template <typename String>
+struct HeaderInclude {
+  String name;
+  bool system;
+};
+
+#if defined(__cpp_deduction_guides)
+template <typename String>
+HeaderInclude(String, bool) -> HeaderInclude<String>;
+#endif
+
+// `bronto::include`:
+//
+// In a replacement, `bronto::include(h)` requests that the file the rewrite
+// modifies include the header `h` names. For example,
+// `bronto::include(bronto::HeaderInclude{"vector", true})` requests
+// `#include <vector>`. Like the argument of `bronto::eval`, `h` is
+// constant-evaluated after the expressions captured at the rewrite site are
+// substituted for the parameters of the replacement function. So a constexpr
+// function can compute the header from the matched code.
+//
+// The argument may also be a braced list, as in
+// `bronto::include({"vector", true})`, which initializes a
+// `bronto::HeaderInclude<char const*>`.
+//
+// `bronto::include` may only appear in a function annotated with
+// `BRONTO_AFTER()`, and must be written as a leading statement of the function
+// body, ahead of the statement describing the replacement. It contributes
+// nothing to the replacement text. A single replacement may request several
+// headers.
+//
+// The requests of every rewrite applied to a file are combined, so each header
+// is inserted at most once, and never when the file already includes it with
+// the same spelling and delimiters. Each header is placed according to the
+// include ordering in the file's clang-format style. A request belongs to the
+// rewrite that made it, so a rewrite that is not applied inserts no headers.
+//
+// `String` defaults to `char const*` because a braced list argument cannot
+// deduce it.
+template <typename String = char const*>
+typename internal::enable_if<internal::is_char_string<String>::value>::type
+include(HeaderInclude<String> h);
+
 #endif  // __cplusplus >= 201103L
 
 }  // namespace bronto
