@@ -643,6 +643,79 @@ template <int&... ExplicitArgumentBarrier, typename T, typename R,
                                        int>::type = 0>
 R eval(T value, R&& tag);
 
+namespace internal {
+
+template <typename T, typename U>
+struct is_same {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_same<T, T> {
+  enum : bool { value = true };
+};
+
+// The code unit type of a string-like or character-pointer type `T`, as its
+// `type` member. Any other `T` has no `type` member.
+template <typename T, typename = void>
+struct code_unit {};
+
+template <typename T>
+struct code_unit<T, typename enable_if<is_char_pointer<T>::value>::type>
+    : char_pointer<T> {};
+
+template <typename T>
+struct code_unit<T, typename enable_if<is_string_like<T>::value>::type>
+    : char_pointer<decltype(declval<T&>().data())> {};
+
+// Whether `T` is a string-like or character-pointer type whose code units are
+// `char`.
+template <typename T, typename = void>
+struct is_char_string {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_char_string<T, typename enable_if<is_same<typename code_unit<T>::type,
+                                                    char>::value>::type> {
+  enum : bool { value = true };
+};
+
+}  // namespace internal
+
+// `bronto::include`:
+//
+// In a replacement, `bronto::include(header)` requests that the file the
+// rewrite modifies include `header`. Like the argument of `bronto::eval`,
+// `header` is evaluated at each rewrite site, with the values matched there
+// substituted for the replacement's parameters, so it may be any expression
+// that evaluates to a string of `char`. That includes a string literal, a
+// `constexpr std::string_view` in C++17, a `constexpr std::string` in C++20,
+// and a parameter bound to a string literal.
+//
+// A header in angle brackets, as in `"<vector>"`, is included as a system
+// header, with `#include <vector>`. Any other header is spelled without quotes,
+// as in `"absl/strings/str_cat.h"`, and is included with
+// `#include "absl/strings/str_cat.h"`. A header that cannot be evaluated, or
+// that cannot be written in an `#include` directive, such as one that is empty
+// or contains a newline, is reported, and the rewrite is not applied at that
+// site.
+//
+// `bronto::include` may only appear in a function annotated with
+// `BRONTO_AFTER()`, and must be written as a leading statement of the function
+// body, ahead of the statement describing the replacement. It contributes
+// nothing to the replacement text. A single replacement may request several
+// headers.
+//
+// The requests of every rewrite applied to a file are combined, so each header
+// is inserted at most once, and never when the file already includes it. Each
+// header is placed according to the include ordering in the file's
+// clang-format style. A request belongs to the rewrite that made it, so a
+// rewrite that is not applied inserts no headers.
+template <typename String>
+typename internal::enable_if<internal::is_char_string<String>::value>::type
+include(String header);
+
 #endif  // __cplusplus >= 201103L
 
 }  // namespace bronto
