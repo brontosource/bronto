@@ -298,6 +298,17 @@ struct rewrite_decl {};
 // https://brontosource.dev/docs for more details.
 struct rewrite_expr {};
 
+// `bronto::rewrite_field`:
+//
+// An empty struct used as a marker that any struct/class inheriting from it
+// represents a non-static data member replacement. Member functions can be
+// annotated as `BRONTO_BEFORE` to indicate they represent a pattern to be
+// searched for, or `BRONTO_AFTER` to indicate they represent a replacement
+// pattern. The first template parameter of each such function is bound to the
+// class, struct, or union declaring the matched data member. See
+// https://brontosource.dev/docs for more details.
+struct rewrite_field {};
+
 // `bronto::rewrite_param`:
 //
 // An empty struct used as a marker that any struct/class inheriting from it
