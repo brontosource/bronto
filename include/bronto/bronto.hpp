@@ -505,11 +505,18 @@ struct is_string_like<
   enum : bool { value = true };
 };
 
+// The code unit type of a string-like or character-pointer type `T`, as its
+// `type` member. Any other `T` has no `type` member.
+template <typename T, typename = void>
+struct code_unit {};
+
 template <typename T>
-struct string_literal_type {
-  typedef
-      typename char_pointer<decltype(declval<T&>().data())>::type const* type;
-};
+struct code_unit<T, typename enable_if<is_char_pointer<T>::value>::type>
+    : char_pointer<T> {};
+
+template <typename T>
+struct code_unit<T, typename enable_if<is_string_like<T>::value>::type>
+    : char_pointer<decltype(declval<T&>().data())> {};
 
 template <typename T>
 struct is_class_type {
@@ -611,13 +618,8 @@ template <typename T, typename internal::enable_if<
                           int>::type = 0>
 T eval(T value);
 
-template <typename T, typename internal::enable_if<
-                          internal::is_string_like<T>::value, int>::type = 0>
-typename internal::string_literal_type<T>::type eval(T value);
-
-template <typename T, typename internal::enable_if<
-                          internal::is_char_pointer<T>::value, int>::type = 0>
-typename internal::char_pointer<T>::type const* eval(T value);
+template <typename T>
+typename internal::code_unit<T>::type const* eval(T value);
 
 // The two-argument `bronto::eval` emits its value as a UDL (user-defined
 // literal).

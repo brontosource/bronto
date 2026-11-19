@@ -116,6 +116,41 @@ struct Plain {};
 static_assert(not is_udl_evaluable<Plain>::value,
               "plain class is not evaluable");
 
+template <typename T, typename U>
+struct is_same {
+  enum : bool { value = false };
+};
+
+template <typename T>
+struct is_same<T, T> {
+  enum : bool { value = true };
+};
+
+// The one-argument `bronto::eval(value)` is declared to return the type of the
+// literal written in its place.
+static_assert(is_same<decltype(bronto::eval(1)), int>::value,
+              "an integer evaluates to its own type");
+static_assert(is_same<decltype(bronto::eval(1.5)), double>::value,
+              "a floating-point value evaluates to its own type");
+static_assert(is_same<decltype(bronto::eval("abc")), char const*>::value,
+              "a string literal evaluates to a char pointer");
+static_assert(is_same<decltype(bronto::eval(u"abc")), char16_t const*>::value,
+              "a char16_t string literal evaluates to a char16_t pointer");
+static_assert(is_same<decltype(bronto::eval(StringLike())), char const*>::value,
+              "a string-like class evaluates to a char pointer");
+
+// Explicit template arguments name the type `value` is converted to.
+static_assert(is_same<decltype(bronto::eval<long>(1)), long>::value,
+              "an explicit integer type is the result type");
+static_assert(is_same<decltype(bronto::eval<bool>(1)), bool>::value,
+              "an explicit bool is the result type");
+static_assert(
+    is_same<decltype(bronto::eval<char const*>("abc")), char const*>::value,
+    "an explicit char pointer evaluates to a char pointer");
+static_assert(is_same<decltype(bronto::eval<StringLike>(StringLike())),
+                      char const*>::value,
+              "an explicit string-like class evaluates to a char pointer");
+
 }  // namespace eval_test
 
 #endif  // __cplusplus >= 201103L
